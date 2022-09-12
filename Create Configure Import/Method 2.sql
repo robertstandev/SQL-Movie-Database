@@ -54,7 +54,7 @@ GO
 
 --Add data to table
 BULK INSERT dbo.People
-FROM 'C:\Users\PC\Desktop\Data\ImdbName.csv'
+FROM 'C:\Users\PC\Desktop\SQL-Movie-Database-main\Data\ImdbName.csv'
 WITH
 (
 	FIRSTROW = 2,			--from 2 because 1 is the header
@@ -87,7 +87,7 @@ GO
 
 --Add data to table
 BULK INSERT dbo.CountriesTitleVariation
-FROM 'C:\Users\PC\Desktop\Data\ImdbTitleAkas.csv'
+FROM 'C:\Users\PC\Desktop\SQL-Movie-Database-main\Data\ImdbTitleAkas.csv'
 WITH
 (
 	FIRSTROW = 2,			--from 2 because 1 is the header
@@ -120,7 +120,7 @@ GO
 
 --Add data to table
 BULK INSERT dbo.Titles
-FROM 'C:\Users\PC\Desktop\Data\ImdbTitleBasics.csv'
+FROM 'C:\Users\PC\Desktop\SQL-Movie-Database-main\Data\ImdbTitleBasics.csv'
 WITH
 (
 	FIRSTROW = 2,			--from 2 because 1 is the header
@@ -147,7 +147,7 @@ GO
 
 --Add data to table
 BULK INSERT dbo.Creator
-FROM 'C:\Users\PC\Desktop\Data\ImdbTitleCrew.csv'
+FROM 'C:\Users\PC\Desktop\SQL-Movie-Database-main\Data\ImdbTitleCrew.csv'
 WITH
 (
 	FIRSTROW = 2,			--from 2 because 1 is the header
@@ -175,7 +175,7 @@ GO
 
 --Add data to table
 BULK INSERT dbo.Episode
-FROM 'C:\Users\PC\Desktop\Data\ImdbTitleEpisode.csv'
+FROM 'C:\Users\PC\Desktop\SQL-Movie-Database-main\Data\ImdbTitleEpisode.csv'
 WITH
 (
 	FIRSTROW = 2,			--from 2 because 1 is the header
@@ -206,7 +206,7 @@ GO
 
 --Add data to table
 BULK INSERT dbo.Biography
-FROM 'C:\Users\PC\Desktop\Data\ImdbTitlePrincipals.csv'
+FROM 'C:\Users\PC\Desktop\SQL-Movie-Database-main\Data\ImdbTitlePrincipals.csv'
 WITH
 (
 	FIRSTROW = 2,			--from 2 because 1 is the header
@@ -233,7 +233,7 @@ GO
 
 --Add data to table
 BULK INSERT dbo.Rating
-FROM 'C:\Users\PC\Desktop\Data\ImdbTitleRatings.csv'
+FROM 'C:\Users\PC\Desktop\SQL-Movie-Database-main\Data\ImdbTitleRatings.csv'
 WITH
 (
 	FIRSTROW = 2,			--from 2 because 1 is the header
