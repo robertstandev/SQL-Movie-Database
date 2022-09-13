@@ -44,7 +44,7 @@ USE RobertStanMovieDatabase
 GO
 
 
-------------------------------------------------------------
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=CREATE TABLES=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
 --Create People table
 CREATE TABLE dbo.People
@@ -57,32 +57,6 @@ CREATE TABLE dbo.People
 	TitleID VARCHAR(100)
 )
 GO
-
-
---Add data to table
-
---FilePath preparation
-DECLARE @DataFolderPath AS VARCHAR(250)
-SELECT @DataFolderPath = VarVal FROM #TempPathTable
-DECLARE @SQL_BULK VARCHAR(MAX)
-SET @SQL_BULK =
-
---Import code
-'BULK INSERT dbo.People
-FROM '''+ @DataFolderPath +'\ImdbName.csv''
-WITH
-(
-	FIRSTROW = 2,				--from 2 because 1 is the header
-	FIELDTERMINATOR = '';'',	--CSV field delimiter
-	ROWTERMINATOR = ''0x0A'',	--Use to shift the control to the next row (enter)
-	TABLOCK
-)'
-EXEC(@SQL_BULK)
-GO
-
-
-------------------------------------------------------------
-
 
 --Create CountriesTitleVariation table
 CREATE TABLE dbo.CountriesTitleVariation
@@ -99,35 +73,8 @@ CREATE TABLE dbo.CountriesTitleVariation
 )
 GO
 
-
-
---Add data to table
-
---FilePath preparation
-DECLARE @DataFolderPath AS VARCHAR(250)
-SELECT @DataFolderPath = VarVal FROM #TempPathTable
-DECLARE @SQL_BULK VARCHAR(MAX)
-SET @SQL_BULK =
-
---Import code
-'BULK INSERT dbo.CountriesTitleVariation
-FROM '''+ @DataFolderPath +'\ImdbTitleAkas.csv''
-WITH
-(
-	FIRSTROW = 2,				--from 2 because 1 is the header
-	FIELDTERMINATOR = '';'',	--CSV field delimiter
-	ROWTERMINATOR = ''0x0A'',	--Use to shift the control to the next row (enter)
-	TABLOCK
-)'
-EXEC(@SQL_BULK)
-GO
-
-
-------------------------------------------------------------
-
-
 --Create Titles table
-CREATE TABLE dbo.Titles
+CREATE TABLE dbo.Title
 (
 	TitleID VARCHAR(10) PRIMARY KEY,
 	Type VARCHAR(50) NOT NULL,
@@ -141,33 +88,6 @@ CREATE TABLE dbo.Titles
 )
 GO
 
-
-
---Add data to table
-
---FilePath preparation
-DECLARE @DataFolderPath AS VARCHAR(250)
-SELECT @DataFolderPath = VarVal FROM #TempPathTable
-DECLARE @SQL_BULK VARCHAR(MAX)
-SET @SQL_BULK =
-
---Import code
-'BULK INSERT dbo.Titles
-FROM '''+ @DataFolderPath +'\ImdbTitleBasics.csv''
-WITH
-(
-	FIRSTROW = 2,				--from 2 because 1 is the header
-	FIELDTERMINATOR = '';'',	--CSV field delimiter
-	ROWTERMINATOR = ''0x0A'',	--Use to shift the control to the next row (enter)
-	TABLOCK
-)'
-EXEC(@SQL_BULK)
-GO
-
-
-------------------------------------------------------------
-
-
 --Create Creator table
 CREATE TABLE dbo.Creator
 (
@@ -176,33 +96,6 @@ CREATE TABLE dbo.Creator
 	WriterID VARCHAR(MAX)
 )
 GO
-
-
-
---Add data to table
-
---FilePath preparation
-DECLARE @DataFolderPath AS VARCHAR(250)
-SELECT @DataFolderPath = VarVal FROM #TempPathTable
-DECLARE @SQL_BULK VARCHAR(MAX)
-SET @SQL_BULK =
-
---Import code
-'BULK INSERT dbo.Creator
-FROM '''+ @DataFolderPath +'\ImdbTitleCrew.csv''
-WITH
-(
-	FIRSTROW = 2,				--from 2 because 1 is the header
-	FIELDTERMINATOR = '';'',	--CSV field delimiter
-	ROWTERMINATOR = ''0x0A'',	--Use to shift the control to the next row (enter)
-	TABLOCK
-)'
-EXEC(@SQL_BULK)
-GO
-
-
-------------------------------------------------------------
-
 
 --Create Episode table
 CREATE TABLE dbo.Episode
@@ -213,33 +106,6 @@ CREATE TABLE dbo.Episode
 	Episode INT
 )
 GO
-
-
-
---Add data to table
-
---FilePath preparation
-DECLARE @DataFolderPath AS VARCHAR(250)
-SELECT @DataFolderPath = VarVal FROM #TempPathTable
-DECLARE @SQL_BULK VARCHAR(MAX)
-SET @SQL_BULK =
-
---Import code
-'BULK INSERT dbo.Episode
-FROM '''+ @DataFolderPath +'\ImdbTitleEpisode.csv''
-WITH
-(
-	FIRSTROW = 2,				--from 2 because 1 is the header
-	FIELDTERMINATOR = '','',	--CSV field delimiter
-	ROWTERMINATOR = ''0x0A'',	--Use to shift the control to the next row (enter)
-	TABLOCK
-)'
-EXEC(@SQL_BULK)
-GO
-
-
-------------------------------------------------------------
-
 
 --Create Biography table
 CREATE TABLE dbo.Biography
@@ -254,33 +120,6 @@ CREATE TABLE dbo.Biography
 )
 GO
 
-
-
---Add data to table
-
---FilePath preparation
-DECLARE @DataFolderPath AS VARCHAR(250)
-SELECT @DataFolderPath = VarVal FROM #TempPathTable
-DECLARE @SQL_BULK VARCHAR(MAX)
-SET @SQL_BULK =
-
---Import code
-'BULK INSERT dbo.Biography
-FROM '''+ @DataFolderPath +'\ImdbTitlePrincipals.csv''
-WITH
-(
-	FIRSTROW = 2,				--from 2 because 1 is the header
-	FIELDTERMINATOR = '';'',	--CSV field delimiter
-	ROWTERMINATOR = ''0x0A'',	--Use to shift the control to the next row (enter)
-	TABLOCK
-)'
-EXEC(@SQL_BULK)
-GO
-
-
-------------------------------------------------------------
-
-
 --Create Rating table
 CREATE TABLE dbo.Rating
 (
@@ -292,27 +131,54 @@ GO
 
 
 
---Add data to table
 
---FilePath preparation
-DECLARE @DataFolderPath AS VARCHAR(250)
-SELECT @DataFolderPath = VarVal FROM #TempPathTable
-DECLARE @SQL_BULK VARCHAR(MAX)
-SET @SQL_BULK =
 
---Import code
-'BULK INSERT dbo.Rating
-FROM '''+ @DataFolderPath +'\ImdbTitleRatings.csv''
-WITH
-(
-	FIRSTROW = 2,				--from 2 because 1 is the header
-	FIELDTERMINATOR = '';'',	--CSV field delimiter
-	ROWTERMINATOR = ''0x0A'',	--Use to shift the control to the next row (enter)
-	TABLOCK
-)'
-EXEC(@SQL_BULK)
+
+
+
+IF OBJECT_ID('AddDataToTable') IS NOT NULL
+DROP PROCEDURE AddDataToTable
 GO
 
+
+CREATE PROCEDURE AddDataToTable @TableName VARCHAR(50), @DataFolderPath VARCHAR(250), @DataFile VARCHAR(50), @FieldDeterminator VARCHAR(10)
+AS
+BEGIN
+DECLARE @SQL_BULK VARCHAR(MAX)
+SET @SQL_BULK =
+'BULK INSERT '+@TableName+'
+FROM '''+@DataFolderPath+@DataFile+'''
+WITH
+(
+	FIRSTROW = 2,
+	FIELDTERMINATOR = '''+@FieldDeterminator+''',
+	ROWTERMINATOR = ''0x0A'',
+	TABLOCK
+)'
+EXEC (@SQL_BULK)
+END
+GO
+
+
+
+
+
+
+DECLARE @DataFolderPath AS VARCHAR(250)
+SELECT @DataFolderPath = VarVal FROM #TempPathTable
+
+EXEC AddDataToTable 'dbo.People',@DataFolderPath,'\ImdbName.csv',';'
+EXEC AddDataToTable 'dbo.CountriesTitleVariation',@DataFolderPath,'\ImdbTitleAkas.csv',';'
+EXEC AddDataToTable 'dbo.Title',@DataFolderPath,'\ImdbTitleBasics.csv',';'
+EXEC AddDataToTable 'dbo.Creator',@DataFolderPath,'\ImdbTitleCrew.csv',';'
+EXEC AddDataToTable 'dbo.Episode',@DataFolderPath,'\ImdbTitleEpisode.csv',','
+EXEC AddDataToTable 'dbo.Biography',@DataFolderPath,'\ImdbTitlePrincipals.csv',';'
+EXEC AddDataToTable 'dbo.Rating',@DataFolderPath,'\ImdbTitleRatings.csv',';'
+
+
+IF OBJECT_ID('AddDataToTable') IS NOT NULL
+DROP PROCEDURE AddDataToTable
+GO
 
 --Remove DataFolderLocationPath
 DROP TABLE #TempPathTable
