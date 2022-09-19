@@ -1,4 +1,4 @@
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=DATA FOLDER PATH CONFIGURATION=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=DATA FOLDER - PATH CONFIGURATION=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
 IF OBJECT_ID('tempdb..#TempPathTable') IS NOT NULL DROP TABLE #TempPathTable
 DECLARE @DataFolderPath AS VARCHAR(250)
@@ -9,7 +9,6 @@ SELECT @DataFolderPath AS VarVal INTO #TempPathTable
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=REMOVE OLD DATABASE=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
---Select Master
 USE master
 GO
 
@@ -24,29 +23,22 @@ where   db_name(dbid) = @databasename
      dbid <> 0 
      and 
      spid <> @@spid 
-exec(@Sql)
+EXEC(@Sql)
 GO
 
---Drop database
 DROP DATABASE IF EXISTS RobertStanMovieDatabase
 GO
 
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=CREATE NEW DATABASE=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=DATABASE=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-
---Create database
 CREATE DATABASE RobertStanMovieDatabase
 GO
 
---Select database
 USE RobertStanMovieDatabase
 GO
 
-
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=CREATE TABLES=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
---Create People table
 CREATE TABLE dbo.People
 (
 	NameID VARCHAR(10) PRIMARY KEY,
@@ -58,22 +50,6 @@ CREATE TABLE dbo.People
 )
 GO
 
---Create CountriesTitleVariation table
-CREATE TABLE dbo.CountriesTitleVariation
-(
-	TitleID VARCHAR(10),
-	Ordering TINYINT,
-	Title NVARCHAR(300),
-	Region NVARCHAR(15),
-	Language NVARCHAR(10),
-	Types NVARCHAR(50),
-	Attributes VARCHAR(75),
-	IsOriginalTitle BIT
-	PRIMARY KEY(TitleID,Ordering)
-)
-GO
-
---Create Titles table
 CREATE TABLE dbo.Title
 (
 	TitleID VARCHAR(10) PRIMARY KEY,
@@ -88,7 +64,6 @@ CREATE TABLE dbo.Title
 )
 GO
 
---Create Creator table
 CREATE TABLE dbo.Creator
 (
 	TitleID VARCHAR(10) PRIMARY KEY,
@@ -97,7 +72,6 @@ CREATE TABLE dbo.Creator
 )
 GO
 
---Create Episode table
 CREATE TABLE dbo.Episode
 (
 	TitleID VARCHAR(10) PRIMARY KEY,
@@ -107,7 +81,6 @@ CREATE TABLE dbo.Episode
 )
 GO
 
---Create Biography table
 CREATE TABLE dbo.Biography
 (
 	TitleID VARCHAR(10),
@@ -120,7 +93,6 @@ CREATE TABLE dbo.Biography
 )
 GO
 
---Create Rating table
 CREATE TABLE dbo.Rating
 (
 	TitleID VARCHAR(10) PRIMARY KEY,
@@ -129,29 +101,31 @@ CREATE TABLE dbo.Rating
 )
 GO
 
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=ADD FOREGIN KEY CONSTRAINTS=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
+ALTER TABLE dbo.Rating ADD FOREIGN KEY (TitleID) REFERENCES dbo.Title (TitleID)
+ALTER TABLE dbo.Episode ADD FOREIGN KEY (ParentTitleID) REFERENCES dbo.Title (TitleID)
+ALTER TABLE dbo.Biography ADD FOREIGN KEY (TitleID) REFERENCES dbo.Title (TitleID)
+ALTER TABLE dbo.Biography ADD FOREIGN KEY (NameID) REFERENCES dbo.People (NameID)
+ALTER TABLE dbo.Creator ADD FOREIGN KEY (TitleID) REFERENCES dbo.Title (TitleID)
 
-
-
-
-
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=ADD DATA TO TABLES=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
 IF OBJECT_ID('AddDataToTable') IS NOT NULL
 DROP PROCEDURE AddDataToTable
 GO
-
 
 CREATE PROCEDURE AddDataToTable @TableName VARCHAR(50), @DataFolderPath VARCHAR(250), @DataFile VARCHAR(50), @FieldDeterminator VARCHAR(10)
 AS
 BEGIN
 DECLARE @SQL_BULK VARCHAR(MAX)
 SET @SQL_BULK =
-'BULK INSERT '+@TableName+'
-FROM '''+@DataFolderPath+@DataFile+'''
+'BULK INSERT '+ @TableName +'
+FROM '''+ @DataFolderPath + @DataFile +'''
 WITH
 (
 	FIRSTROW = 2,
-	FIELDTERMINATOR = '''+@FieldDeterminator+''',
+	FIELDTERMINATOR = '''+ @FieldDeterminator +''',
 	ROWTERMINATOR = ''0x0A'',
 	TABLOCK
 )'
@@ -161,25 +135,21 @@ GO
 
 
 
-
-
-
 DECLARE @DataFolderPath AS VARCHAR(250)
 SELECT @DataFolderPath = VarVal FROM #TempPathTable
 
 EXEC AddDataToTable 'dbo.People',@DataFolderPath,'\ImdbName.csv',';'
-EXEC AddDataToTable 'dbo.CountriesTitleVariation',@DataFolderPath,'\ImdbTitleAkas.csv',';'
 EXEC AddDataToTable 'dbo.Title',@DataFolderPath,'\ImdbTitleBasics.csv',';'
 EXEC AddDataToTable 'dbo.Creator',@DataFolderPath,'\ImdbTitleCrew.csv',';'
 EXEC AddDataToTable 'dbo.Episode',@DataFolderPath,'\ImdbTitleEpisode.csv',','
 EXEC AddDataToTable 'dbo.Biography',@DataFolderPath,'\ImdbTitlePrincipals.csv',';'
 EXEC AddDataToTable 'dbo.Rating',@DataFolderPath,'\ImdbTitleRatings.csv',';'
 
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=DROP REDUNDANCIES=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
 IF OBJECT_ID('AddDataToTable') IS NOT NULL
 DROP PROCEDURE AddDataToTable
 GO
 
---Remove DataFolderLocationPath
-DROP TABLE #TempPathTable
+DROP TABLE IF EXISTS #TempPathTable
 GO
