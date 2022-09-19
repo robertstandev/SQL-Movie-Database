@@ -1,5 +1,7 @@
 # SQL-Movie-Database
+
 ##Install and Configure
+
 1.Download repository
 <br>
 <br>
