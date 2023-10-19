@@ -11,3 +11,11 @@ do
     cat "$file" >> tmp_file
     mv -f tmp_file "$file"
 done
+
+
+4.
+Put files in their coresponding directory
+ex:
+You imported name.basics and then split it to file0.csv, file1.csv, file2.csv.
+Put file0.csv, file1.csv, file2.csv in /SQL-Movie-Database/Data/name.basics/
+Repeat for all types
